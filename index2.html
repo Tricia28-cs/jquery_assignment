@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>User List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <div class="container-fluid mt-4">
+      <h3>User List</h3>
+
+      <table class="table table-sm">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Fullname</th>
+            <th>Email</th>
+          </tr>
+        </thead>
+        <tbody id="userTbody">
+          <tr>
+            <td>abraham</td>
+            <td>Abraham Lincoln</td>
+            <td>abraham@au.edu</td>
+          </tr>
+          <tr>
+            <td>columbus</td>
+            <td>Christopher Columbus</td>
+            <td>columbus@au.edu</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button
+        class="btn btn-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#addUserModal"
+      >
+        New User
+      </button>
+    </div>
+
+    <div
+      class="modal fade"
+      id="addUserModal"
+      tabindex="-1"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">New User</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+
+          <div class="modal-body">
+            <form id="userForm">
+              <div class="row mb-3">
+                <div class="col-4">
+                  <label class="col-form-label">Username</label>
+                </div>
+                <div class="col-8">
+                  <input
+                    type="text"
+                    id="username"
+                    class="form-control is-invalid"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-4">
+                  <label class="col-form-label">Fullname</label>
+                </div>
+                <div class="col-8">
+                  <input
+                    type="text"
+                    id="fullname"
+                    class="form-control"
+                    list="fullnameList"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-4">
+                  <label class="col-form-label">Email</label>
+                </div>
+                <div class="col-8">
+                  <input
+                    type="email"
+                    id="email"
+                    class="form-control"
+                    list="emailList"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="modal-footer">
+            <button id="addUserBtn" class="btn btn-success">
+              Add User
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <datalist id="fullnameList"></datalist>
+    <datalist id="emailList"></datalist>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      const userTbody = document.getElementById("userTbody");
+      const usernameEl = document.getElementById("username");
+      const fullnameEl = document.getElementById("fullname");
+      const emailEl = document.getElementById("email");
+      const fullnameList = document.getElementById("fullnameList");
+      const emailList = document.getElementById("emailList");
+
+      const modal = bootstrap.Modal.getOrCreateInstance(
+        document.getElementById("addUserModal")
+      );
+
+      function getUsers() {
+        return [...userTbody.querySelectorAll("tr")].map((tr) => {
+          const td = tr.querySelectorAll("td");
+          return {
+            username: td[0].innerText.trim(),
+            fullname: td[1].innerText.trim(),
+            email: td[2].innerText.trim(),
+          };
+        });
+      }
+
+      function refreshSuggestions() {
+        const users = getUsers();
+
+        fullnameList.innerHTML = users
+          .map((u) => `<option value="${u.fullname}"></option>`)
+          .join("");
+
+        emailList.innerHTML = users
+          .map((u) => `<option value="${u.email}"></option>`)
+          .join("");
+      }
+
+      document
+        .getElementById("addUserModal")
+        .addEventListener("shown.bs.modal", () => {
+          refreshSuggestions();
+          usernameEl.focus();
+        });
+
+      usernameEl.addEventListener("input", () => {
+        usernameEl.classList.remove("is-invalid");
+
+        const found = getUsers().find(
+          (u) => u.username === usernameEl.value.trim()
+        );
+
+        if (found) {
+          fullnameEl.value = found.fullname;
+          emailEl.value = found.email;
+        }
+      });
+
+      document.getElementById("addUserBtn").addEventListener("click", () => {
+        if (
+          !usernameEl.value.trim() ||
+          !fullnameEl.value.trim() ||
+          !emailEl.value.trim()
+        ) {
+          usernameEl.classList.add("is-invalid");
+          return;
+        }
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${usernameEl.value}</td>
+          <td>${fullnameEl.value}</td>
+          <td>${emailEl.value}</td>
+        `;
+        userTbody.appendChild(tr);
+
+        usernameEl.value = "";
+        fullnameEl.value = "";
+        emailEl.value = "";
+        usernameEl.classList.add("is-invalid");
+
+        modal.hide();
+      });
+    </script>
+  </body>
+</html>
